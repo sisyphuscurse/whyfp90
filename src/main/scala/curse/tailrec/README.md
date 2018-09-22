@@ -1,6 +1,12 @@
- # 执行程 
+# 该类中包含了3个Demo
+* StackOverflow版本的 factorial 函数
+* 修复StackOverflow版本的 factorial 函数
+* 更一般的尾递归方法（FreeMonad前戏）
+
+# 理解Demo3执行过程
   用FP的替换原则理解Demo3中run(factorial(3))的factorial和run的交替执行过程
-  假设 f = ((i: BigDecimal) => factorial(i - 1).map(j => i * j))
+  
+  假设 ```f = ((i: BigDecimal) => factorial(i - 1).map(j => i * j))```
   
   ```
   run(factorial(3))
