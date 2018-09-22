@@ -9,7 +9,6 @@ object Demo extends App {
     else n * factorial(n - 1)
 
   println(factorial(1000L))
-
 }
 
 object Demo2 extends App {
@@ -34,7 +33,6 @@ object Demo2 extends App {
     else Call[BigDecimal](n, () => factorial(n - 1), _ * _)
 
   println(run(factorial(100000L)))
-
 }
 
 object Demo3 extends App {
@@ -102,5 +100,4 @@ object Demo3 extends App {
     } yield i * j
 
   println(run(factorial(100000L)))
-
 }
