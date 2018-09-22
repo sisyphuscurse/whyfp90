@@ -8,7 +8,6 @@ object Demo extends App {
     if (n <= 0) 1
     else n * factorial(n - 1)
 
-
   println(factorial(1000L))
 
 }
@@ -34,7 +33,7 @@ object Demo2 extends App {
     if (n <= 0) Value(1)
     else Call[BigDecimal](n, () => factorial(n - 1), _ * _)
 
-  println(run(factorial(100000000L)))
+  println(run(factorial(100000L)))
 
 }
 
@@ -103,6 +102,5 @@ object Demo3 extends App {
     } yield i * j
 
   println(run(factorial(100000L)))
-
 
 }
