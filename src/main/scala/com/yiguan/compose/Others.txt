@@ -1,0 +1,20 @@
+
+  /*
+    //def fandcons: Int => List[Int] => List[Int] = cons.compose(double)
+
+    def fandcons(f: Int => Int): Int => List[Int] => List[Int] = cons.compose(f)
+
+
+    def doubleall(xs: List[Int]) = foldr(doubleandcons)(Nil)(xs)
+
+    def doubleandcons(x: Int, ys: List[Int]): List[Int] = fandcons[Int, Int](double)(x)(ys)
+
+    //  def fandcons[A,B](f: A=>B)(a: A)(bs: List[B]) : List[B] = cons.compose(f)(a)(bs)
+    def fandcons[A, B](f: A => B): A => List[B] => List[B] = cons.compose(f)
+
+  def doubleAndCons(x: Int, ys: List[Int]) = fAndCons(double)(x, ys)
+
+  def fAndCons(f: Int => Int)(x: Int, ys: List[Int]): List[Int] = Cons(f(x), ys)
+
+  def fAndCons(f: Int => Int)(x: Int)(ys: List[Int]): List[Int] = Cons(f(x), ys)
+  */

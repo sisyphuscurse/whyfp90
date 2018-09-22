@@ -21,7 +21,6 @@ object Lists extends App {
 
   private def or(a: Boolean, b: Boolean) = a || b
 
-  private def cons(x: Int, zs: List[Int]): List[Int] = Cons(x, zs)
 
   def sum(xs: List[Int]): Int = foldr(plus)(0)(xs)
 
@@ -32,6 +31,7 @@ object Lists extends App {
   def anyTrue(xs: List[Boolean]): Boolean = foldr(or)(false)(xs)
 
   def append(xs: List[Int], ys: List[Int]): List[Int] = foldr(cons)(ys)(xs)
+  private def cons(x: Int, zs: List[Int]): List[Int] = Cons(x, zs)
 
 
   private val aList: List[Int] = Cons[Int](1, Cons[Int](2, Nil))
