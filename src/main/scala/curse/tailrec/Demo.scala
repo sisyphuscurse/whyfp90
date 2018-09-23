@@ -9,6 +9,17 @@ object Demo extends App {
     else n * factorial(n - 1)
 
   println(factorial(1000L))
+
+  def factorialViaFoldLeft(n: BigDecimal): BigDecimal =
+    (1 to n.toInt).foldLeft(BigDecimal(1)) { case (acc, x) =>
+        acc * BigDecimal(x)
+    }
+
+  def factorialTailRec(acc: BigDecimal, n: BigDecimal): BigDecimal =
+    if (n <= 0) acc
+    else factorialTailRec(acc * n, n - 1)
+
+  factorialTailRec(1, 10000L)
 }
 
 object Demo2 extends App {
@@ -17,20 +28,20 @@ object Demo2 extends App {
 
   case class Value[T](get: T) extends TailRec[T]
 
-  case class Call[T](x: T, y: () => TailRec[T], f: (T, T) => T) extends TailRec[T]
+  case class Continuation[T](x: T, y: () => TailRec[T], f: (T, T) => T) extends TailRec[T]
 
   @tailrec
   def run[T](tailRec: TailRec[T]): T = tailRec match {
     case Value(v) => v
-    case Call(x, thunk, f) => thunk() match {
+    case Continuation(x, thunk, f) => thunk() match {
       case Value(v) => f(x, v)
-      case Call(y, z, _) => run(Call(f(x, y), z, f))
+      case Continuation(y, z, _) => run(Continuation(f(x, y), z, f))
     }
   }
 
   def factorial(n: BigDecimal): TailRec[BigDecimal] =
     if (n <= 0) Value(1)
-    else Call[BigDecimal](n, () => factorial(n - 1), _ * _)
+    else Continuation[BigDecimal](n, () => factorial(n - 1), _ * _)
 
   println(run(factorial(100000L)))
 }
@@ -93,11 +104,11 @@ object Demo3 extends App {
   //    else FlatMap(unit(n), ((i: BigDecimal) => factorial(i - 1).map(j => i * j)))
   //其中利用for comprehension可以简写else分支
   def factorial(n: BigDecimal): TailRec[BigDecimal] =
-    if (n <= 0) unit(1)
-    else for {
-      i <- unit(n)
-      j <- factorial(i - 1)
-    } yield i * j
+  if (n <= 0) unit(1)
+  else for {
+    i <- unit(n)
+    j <- factorial(i - 1)
+  } yield i * j
 
   println(run(factorial(100000L)))
 }
