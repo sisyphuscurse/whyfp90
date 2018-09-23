@@ -58,11 +58,12 @@ object AsyncDemo extends App {
     else
       FlatMap(Return(n), (i: BigDecimal) => factorialWithoutSuspend(n - 1).map(_ * i))
 
-  run(factorial(3)).foreach { x => println(x) }
+  run(factorial(3)).foreach(println)
 
   run(factorialWithoutSuspend(100000L)).foreach { x =>
-    println(x);
+    println(x)
     sys.exit
   }
+
   Thread.sleep(100000L)
 }
