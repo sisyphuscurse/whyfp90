@@ -4,11 +4,21 @@ import curse.free.FreeDemo._
 
 object ConsoleIODemo extends App {
 
-  sealed trait Console[T]
+  sealed trait Console[T] {
+    def toThunk(): () => T
+  }
 
-  case object ReadLine extends Console[Option[String]]
+  case object ReadLine extends Console[Option[String]] {
+    override def toThunk(): () => Option[String] = () => run
 
-  case class Println(line: String) extends Console[Unit]
+    def run(): Option[String] = try Some(Console.readLine) catch {
+      case e: Exception => None
+    }
+  }
+
+  case class Println(line: String) extends Console[Unit] {
+    override def toThunk(): () => Unit = () => println(line)
+  }
 
   import curse.free._
 
@@ -20,10 +30,11 @@ object ConsoleIODemo extends App {
 
 
   val f1: Free[Console, Option[String]] = for {
-    _ <- println("I can only inteact with the console.")
+    _ <- printLn("I can only inteact with the console.")
     ln <- readLn
   } yield ln
 
+  /*
   val monad: Monad[Console] = new Monad[Console] {
 
     override def flatMap[A, B](fa: Console[A])(f: A => Console[B]): Console[B] = fa match {
@@ -36,8 +47,9 @@ object ConsoleIODemo extends App {
     override def unit[A](a: => A): Console[A] = ???
   }
 
-  run[Console, Option[String]](f1)(monad)
-
+    does not work
+    run[Console, Option[String]](f1)(monad)
+  */
   trait Translate[F[_], G[_]] {
     def apply[A](f: F[A]): G[A]
   }
@@ -48,9 +60,24 @@ object ConsoleIODemo extends App {
     step(free) match {
       case Return(v) => G.unit(v)
       case Suspend(r) => t(r)
-      case FlatMap(Suspend(r), f) => G.flatMap(t(r))(a => runFree(a)(t))
+      case FlatMap(Suspend(r), f) => G.flatMap(t(r))(a => runFree(f(a))(t))
       case _ => sys.error("Impossible; `step` eliminates these cases")
     }
 
+  val consoleToFunction0: ~>[Console, Function0] = new ~>[Console, Function0] {
+    override def apply[A](f: Console[A]): () => A = f.toThunk()
+  }
 
+  val F: Monad[Function0] = new Monad[Function0] {
+    override def flatMap[A, B](fa: () => A)(f: A => () => B): () => B = () =>
+      f(fa())()
+
+    override def map[A, B](fa: () => A)(f: A => B): () => B = () => f(fa())
+
+    override def unit[A](a: => A): () => A = () => a
+  }
+
+  val s: () => Option[String] = runFree(f1)(consoleToFunction0)(F)
+
+  println(s())
 }
