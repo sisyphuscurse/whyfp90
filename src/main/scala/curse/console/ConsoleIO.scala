@@ -80,4 +80,23 @@ object ConsoleIODemo extends App {
   val s: () => Option[String] = runFree(f1)(consoleToFunction0)(F)
 
   println(s())
+
+
+  type FF[A] = () => A
+  type FreeMonad[A] = Free[FF, A]
+
+  val fft: ~>[FF, FreeMonad] = new ~>[FF, FreeMonad] {
+    override def apply[A](f: FF[A]): FreeMonad[A] = Suspend(() => f())
+  }
+
+  def translate[F[_], G[_], A](f: Free[F, A])(fg: F ~> G): Free[G, A] = {
+    type FreeG[A] = Free[G, A]
+    val toFreeG: F ~> FreeG = new ~>[F, FreeG] {
+      override def apply[A](f: F[A]): FreeG[A] = Suspend(fg(f))
+    }
+    runFree(f)(toFreeG)(freeMonad[G])
+  }
+
+  def runConsole[A](a: Free[Console, A]): A =
+    runTrampoline(translate(a)(consoleToFunction0))
 }
