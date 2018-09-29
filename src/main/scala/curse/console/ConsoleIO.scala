@@ -6,6 +6,8 @@ object ConsoleIODemo extends App {
 
   sealed trait Console[T] {
     def toThunk(): () => T
+
+    def toReader(): ConsoleReader[T]
   }
 
   case object ReadLine extends Console[Option[String]] {
@@ -14,10 +16,14 @@ object ConsoleIODemo extends App {
     def run(): Option[String] = try Some(Console.readLine) catch {
       case e: Exception => None
     }
+
+    override def toReader(): ConsoleReader[Option[String]] = ConsoleReader.monad.unit(run())
   }
 
   case class Println(line: String) extends Console[Unit] {
     override def toThunk(): () => Unit = () => println(line)
+
+    override def toReader(): ConsoleReader[Unit] = ConsoleReader.monad.unit(())
   }
 
   import curse.free._
@@ -77,10 +83,9 @@ object ConsoleIODemo extends App {
     override def unit[A](a: => A): () => A = () => a
   }
 
-  val s: () => Option[String] = runFree(f1)(consoleToFunction0)(F)
-
-  println(s())
-
+  println("running Function0 interpreter")
+   val s: () => Option[String] = runFree(f1)(consoleToFunction0)(F)
+   println(s())
 
   type FF[A] = () => A
   type FreeMonad[A] = Free[FF, A]
@@ -99,4 +104,35 @@ object ConsoleIODemo extends App {
 
   def runConsole[A](a: Free[Console, A]): A =
     runTrampoline(translate(a)(consoleToFunction0))
+
+  // Another Interpreter for ConsoleIO[A]
+  case class ConsoleReader[A](run: String => A) {
+    def map[B](f: A => B): ConsoleReader[B] =
+      ConsoleReader(f compose run)
+
+    def flatMap[B](f: A => ConsoleReader[B]): ConsoleReader[B] =
+      ConsoleReader(s => (f compose run) (s).run(s))
+  }
+
+  object ConsoleReader {
+    implicit val monad = new Monad[ConsoleReader] {
+      override def flatMap[A, B](fa: ConsoleReader[A])(f: A => ConsoleReader[B]): ConsoleReader[B] = fa flatMap f
+
+      override def map[A, B](fa: ConsoleReader[A])(f: A => B): ConsoleReader[B] = fa map f
+
+      override def unit[A](a: => A): ConsoleReader[A] = ConsoleReader(_ => a)
+    }
+  }
+
+  val consoleToReader = new (Console ~> ConsoleReader) {
+    override def apply[A](f: Console[A]): ConsoleReader[A] = f.toReader()
+  }
+
+  def runConsoleReader[A](f: ConsoleIO[A]): ConsoleReader[A] =
+    runFree(f)(consoleToReader)(ConsoleReader.monad)
+
+  println("running Console Reader Interpreter")
+  println(runConsoleReader(f1).run("whatever"))
+
+  // Another Interpreter for ConsoleState
 }
