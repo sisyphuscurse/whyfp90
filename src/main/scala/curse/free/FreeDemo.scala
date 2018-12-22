@@ -16,6 +16,13 @@ object FreeDemo {
     def map[B](f: A => B): Free[F, B] = flatMap(f andThen (Return(_)))
 
     def flatMap[B](f: A => Free[F, B]): Free[F, B] = FlatMap(this, f)
+
+  }
+
+  object Free {
+
+    def compose[F[_], A, B, C](f: A => Free[F, B])(g: B => Free[F, C]): A => Free[F, C] =
+      a => f(a).flatMap(g)
   }
 
   case class Return[F[_], A](get: A) extends Free[F, A]
@@ -39,7 +46,9 @@ object FreeDemo {
     case FlatMap(x, f) => x match {
       case Return(y) => runTrampoline(f(y))
       case Suspend(r) => runTrampoline(f(r()))
-      case FlatMap(y, g) => runTrampoline(y flatMap { g(_) flatMap f })
+      case FlatMap(y, g) => runTrampoline(y flatMap {
+        g(_) flatMap f
+      })
     }
   }
 
