@@ -1,6 +1,6 @@
 package com.yiguan
 
-import java.lang.Math.pow
+import java.lang.Math.{log10, pow}
 
 import scala.collection.immutable.Stream.cons
 
@@ -55,9 +55,10 @@ object Laziness extends App {
     within(eps)(differentiate(dx)(double, 3))
   )
 
-  def elimerror(n: Long): Stream[Double] => Stream[Double] = {
-    case cons(a, tail@cons(b, _)) =>
-      cons((b * power(n) - a) / power(n), elimerror(n)(tail))
+  def elimerror(n: => Long): Stream[Double] => Stream[Double] = {
+    case cons(a, tail@cons(b, _)) if a != b =>
+      cons((b * power(n) - a) / (power(n) - 1), elimerror(n)(tail))
+    case s => s
   }
 
   private def power(n: Double) = {
@@ -65,33 +66,26 @@ object Laziness extends App {
   }
 
   def order: Stream[Double] => Long = {
-    case cons(a, cons(b, cons(c, _))) => Math.log((a - c) / (b - c) - 1).round
+    case cons(a, cons(b, cons(c, _))) => log2((a - c) / (b - c) - 1).round
   }
+
+  private def log2(d: Double) = log10(d) / log10(2.0D)
 
   def improve(s: Stream[Double]) = elimerror(order(s))(s)
 
-  def complex(x: Double): Double = double(x)//3 * pow(x, 3) - 2 * pow(x, 2) - 7
+  def complex(x: Double): Double = 3 * pow(x, 3) - 2 * pow(x, 2) - 7
+
   println("Function complex's differentiation @ 3 is:")
   println(
-    within(eps)(improve(differentiate(dx)(complex, 3)))
-  )
-  println(
-    within(eps)(improve(improve(differentiate(dx)(complex, 3))))
-  )
-  println(
+    within(eps)(differentiate(dx)(complex, 3)),
+    within(eps)(improve(differentiate(dx)(complex, 3))),
+    within(eps)(improve(improve(differentiate(dx)(complex, 3)))),
     within(eps)(improve(improve(improve(differentiate(dx)(complex, 3)))))
   )
-  /*
   println(
-    relative(eps)(improve(differentiate(dx)(complex, 3)))
+    relative(eps)(improve(differentiate(dx)(complex, 3))),
+    relative(eps)(improve(improve(differentiate(dx)(complex, 3)))),
+    relative(eps)(improve(improve(improve(differentiate(dx)(complex, 3)))))
+
   )
-  println(
-    relative(eps)(improve(improve(differentiate(dx)(complex, 3))))
-  )
-  println(
-    relative(eps)(improve(improve(improve(differentiate(dx)(complex, 3))))),
-    relative(eps)(improve(improve(improve(improve(differentiate(dx)(complex, 3)))))),
-    relative(eps)(improve(improve(improve(improve(improve(differentiate(dx)(complex, 3)))))))
-  )
-  */
 }
