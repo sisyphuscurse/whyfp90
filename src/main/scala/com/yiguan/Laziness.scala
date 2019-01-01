@@ -5,9 +5,7 @@ import java.lang.Math.{log10, pow}
 import scala.collection.immutable.Stream.cons
 
 
-object Laziness extends App {
-  private val dx = 5
-  private val eps = 1e-6
+object Laziness {
 
   def abs(one: Double) = if (one < 0) -one else one
 
@@ -17,6 +15,7 @@ object Laziness extends App {
 
   def within(eps: Double): Stream[Double] => Double = {
     case cons(one, tail@cons(other, _)) =>
+      println(one, other)
       if (abs(other - one) <= eps) other
       else within(eps)(tail)
   }
@@ -44,7 +43,10 @@ object Laziness extends App {
   private def power(n: Double) = pow(2, n)
 
   def order: Stream[Double] => Long = {
-    case cons(a, cons(b, cons(c, _))) => val x = log2((a - c) / (b - c) - 1).round; println(s" n = ${x}"); x
+    case cons(a, cons(b, cons(c, _))) =>
+      val x = log2((a - c) / (b - c) - 1).round;
+      println(s" n = ${x}");
+      x
   }
 
   def improve(s: Stream[Double]) = elimerror(order(s))(s)
@@ -59,7 +61,34 @@ object Laziness extends App {
 
   private def log2(d: Double) = log10(d) / log10(2.0D)
 
+  def easyIntegrate(f: Double => Double)(a: Double)(b: Double) = (f(a) + f(b)) * (b - a) / 2
+
+  def addPair: (Double, Double) => Double = _ + _
+
+  def integrate_slow(f: Double => Double)(a: Double)(b: Double): Stream[Double] = cons(easyIntegrate(f)(a)(b),
+    integrate_slow(f)(a)((a + b) / 2)
+      .zip(integrate_slow(f)((a + b) / 2)(b))
+      .map(addPair.tupled)
+  )
+
+  def integrate(f: Double => Double)(a: Double)(b: Double): Stream[Double] = intg(f, a, b, f(a), f(b))
+
+  def intg(f: Double => Double, a: Double, b: Double, fa: Double, fb: Double): Stream[Double] =
+    cons((fa + fb) * (b - a) / 2,
+      integrate(f)(a)((a + b) / 2)
+        .zip(integrate(f)((a + b) / 2)(b))
+        .map(addPair.tupled)
+    )
+}
+
+object Demo extends App {
+
+  import Laziness._
+
+  private val dx = 5
+  private val eps = 1e-6
   // samples
+  /*
   println("Function complex's differentiation @ 3 is:")
   println(
     within(eps)(differentiate(dx)(complex, 3)),
@@ -88,8 +117,13 @@ object Laziness extends App {
   println(
     relative(eps)(repeat(next(4))(1))
   )
+  */
   println(
-    "superior",
+    "superior on differentiate",
     within(eps)(superior(differentiate(dx)(complex, 3)))
+  )
+  println(
+    "superior on integrate",
+    within(1e-6)(superior(integrate((x: Double) => x * x)(0)(3)))
   )
 }
