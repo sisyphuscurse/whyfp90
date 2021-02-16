@@ -3,7 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/fpmatters.iml" filepath="$PROJECT_DIR$/.idea/modules/fpmatters.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/whyfps90-build.iml" filepath="$PROJECT_DIR$/.idea/modules/whyfps90-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/fpmatters-build.iml" filepath="$PROJECT_DIR$/.idea/modules/fpmatters-build.iml" />
     </modules>
   </component>
 </project>

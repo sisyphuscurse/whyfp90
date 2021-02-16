@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ScalaCompilerConfiguration">
-    <profile name="sbt 1" modules="whyfps90_4731,fpmatters" />
+    <profile name="sbt 1" modules="whyfps90_4731" />
+    <profile name="sbt 2" modules="fpmatters">
+      <parameters>
+        <parameter value="-Ypartial-unification" />
+        <parameter value="-Ypartial-unification" />
+      </parameters>
+    </profile>
   </component>
 </project>

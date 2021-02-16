@@ -9,7 +9,7 @@ object Laziness {
 
   def abs(one: Double) = if (one < 0) -one else one
 
-  def next(n: Double)(x: Double) = (x + n / x) / 2
+  private def next(n: Double)(x: Double) = (x + n / x) / 2
 
   def repeat[T](f: T => T)(zero: T): Stream[T] = cons(zero, repeat(f)(f(zero)))
 
@@ -26,13 +26,13 @@ object Laziness {
       else relative(eps)(tail)
   }
 
-  def easydiff(f: Double => Double, x: Double)(h0: Double) = (f(x + h0) - f(x)) / h0
+  private def easydiff(f: Double => Double, x: Double)(h0: Double) = (f(x + h0) - f(x)) / h0
 
-  def differentiate(h0: Double)(f: Double => Double, x: Double) = repeat(halve)(h0) map (easydiff(f, x))
+  private def differentiate(h0: Double)(f: Double => Double, x: Double) = repeat(halve)(h0) map (easydiff(f, x))
 
-  def halve(x: Double) = x / 2
+  private def halve(x: Double) = x / 2
 
-  def double(x: Double) = 2 * x
+  private def double(x: Double) = 2 * x
 
   def elimerror(n: => Long): Stream[Double] => Stream[Double] = {
     case cons(a, tail@cons(b, _)) if a != b =>
@@ -124,6 +124,8 @@ object Demo extends App {
   )
   println(
     "superior on integrate",
-    within(1e-6)(superior(integrate((x: Double) => x * x)(0)(3)))
+    within(1e-10)(superior(integrate(complex)(0)(3)))
   )
+
+  within(1e-10)(integrate(complex)(0)(3))
 }
